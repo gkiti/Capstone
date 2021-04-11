@@ -22,14 +22,12 @@ OR
 #THIS IS MY DIRECTORY
 setwd("~/Dropbox/Gift captstone/Data")
 
-#Remember to switch backslashes to forward slashes
 ```
 
-# Installing and loading your libraries 
+# Installing and loading my libraries 
 (aka packages to run specific functions)
 
-Below are three packages you will need for this exercise. Once you install them, you need to use the function 'library' to call in the package. You only ever need to install a package once, but you always need to call in a package every time you open R.
-
+Below are the packages and librarries I will need for this exercise. 
 ```{r r loadlib, echo=T, results='hide', message=F, warning=F}
 ####INSTALL AND THEN LOAD LIBRARIES
 
@@ -52,7 +50,6 @@ library(dplyr)
 # Reading in dataset 
 (unless you used the Import Dataset button earlier)
 
-Functions will vary depending on the source file and type! 
 ```{r}
 #rm(list=ls())
 pqcc_raw <- read_dta("pqcc_mothers_surveyv3-8-19-18.dta")
@@ -69,10 +66,6 @@ head(pqcc_raw$comp_labor) #Example
 
 describe(pqcc_raw) #another function to show a concise statistical description
 
-###creates a table of variables###
-#pqcc_raw_vars <- data.frame("label" = sapply(pqcc_raw, 
-                         # function(x) attr(x, "label")) %>% #as.character(),  "labelled" = sapply(pqcc_raw, is.labelled))
-#pqcc_raw_vars
 ```
 
 # Exploring specific variables  --  Part 1
@@ -100,7 +93,8 @@ pqcc_raw$age_raw<-ifelse(15<=pqcc_raw$age & pqcc_raw$age<=19, 1,
 table(pqcc_raw$age_raw, exclude=NULL)
 
 #LABEL AGERAW
-pqcc_raw$age_raw <-factor(pqcc_raw$age_raw, levels=c(1,2,3),  labels=c("15-19", "20-29", "30-48"), ordered=F)#changed to F for ordered
+pqcc_raw$age_raw <-factor(pqcc_raw$age_raw, levels=c(1,2,3), 
+labels=c("15-19", "20-29", "30-48"), ordered=F)#changed to T for ordered
 
 pqcc_raw$age_raw <- set_label(pqcc_raw$age_raw, label = "Maternal age categories")
 
@@ -114,7 +108,8 @@ summary(pqcc_raw$num_births)# mean parity
 # Generating new variables - Part 2
 ```{r}
 
-#marital_status3- here I am combining the partnered/cohabiting category to single category along with the widowed and divorced/separated then having the married category as a separate entity alone
+#marital_status3- Here I am combining the partnered/cohabiting category to single category along with the widowed and divorced/separated then having the married category as a separate entity alone.
+
 #freq(pqcc_raw_3$marital_status)
 pqcc_raw$marital_stat3 <- ifelse(pqcc_raw$marital_status==1,1,
                                    ifelse(pqcc_raw$marital_status==2,1,
@@ -123,7 +118,8 @@ pqcc_raw$marital_stat3 <- ifelse(pqcc_raw$marital_status==1,1,
                                                 ifelse(pqcc_raw$marital_status==5,1,NA)))))
 table(pqcc_raw$marital_stat3, exclude=NULL)
 #LABEL Marital status
-pqcc_raw$marital_stat3 <-factor(pqcc_raw$marital_stat3, levels=c(1,3),  labels=c("Not married", "Married"), ordered=F)#not married here is equal to Single/Widowed/Separated/Divorced/Cohabiting
+pqcc_raw$marital_stat3 <-factor(pqcc_raw$marital_stat3, levels=c(1,3),  labels=c("Not married", "Married"), ordered=F)
+#not married here is equal to Single/Widowed/Separated/Divorced/Cohabiting
 
 pqcc_raw$marital_stat3 <- set_label(pqcc_raw$marital_stat3, label = "Marital status")
 #Check labels
@@ -134,7 +130,7 @@ freq(pqcc_raw$marital_stat3)
 
 ```{r}
 #num_births
-# Here I am clusturing those with 4 or more births into one level so that level 5(5 or more births) is equql to 4
+# Here I am adding those with 4 or more births into one level so that level 5(5 or more births) is part of level 4
 
 freq(pqcc_raw$num_births, cumul = FALSE)
 freq(pqcc_raw$num_births_cat, cumul = FALSE)
@@ -155,7 +151,7 @@ freq(pqcc_raw$num_births_cat2, cumul = FALSE)
 
 ```
 # Generating new variables - Part 4
-## Here we will generate a new variable pcc_explaim meds_1 which will have 3 factors instead of 4 factors. All the 4th option  factors which translate to (Did not get any medicine) were moved into the 3rd category of yes all the time due to conservative coding.
+## Here I will generate a new variable pcc_explain meds_1 which will have 3 factors instead of 4 factors. All the 4th option factors which translate to (Did not get any medicine) were moved into the 3rd category of yes all the time due to conservative coding.
 ```{r}
 #Method 1
 #recoding the 4 items of pcc_explain_meds- goes to 3 as done in validation paper
@@ -269,7 +265,7 @@ piechart
 
 #Generating EXPOSURE variable
 
-**Here we are creating a binary exposure variable using a previous variable pcc_support_labor. Our binary level will combine levels 0 (No never) and 1( Yes, a few times) as the level 0=No then the 3 other levels(2,3,4- yes most of the time, yes all of the time and I did not want someone to stay with me as our level 1 =Yes). Those that responded that I did not want someone to stay with me are part of the 3rd level(Yes all of the time). This is once again because of conservative coding and here we are making the assumption that had the person wanted someone to accompany them they they would have been allowed to have someone with them.**
+**Here we are creating a binary exposure variable using a previous variable pcc_support_labor. Our binary level will combine levels 0 (No never) and 1( Yes, a few times) as the level 0=No then the 3 other levels("yes most of the time" (2), "yes all of the time" (3) and "I did not want someone to stay with me"(4) as our level 1 =Yes). Those that responded that I did not want someone to stay with me are part of the 3rd level(Yes all of the time). This is once again because of conservative coding and here we are making the assumption that had the person wanted someone to accompany them they they would have been allowed to have someone with them.**
 ```{r}
 #EXPOSURE Variable:
 
@@ -301,7 +297,7 @@ freq(pqcc_raw$pcc_support_binary)
 
 # Exclusion Criteria- Subsetting my data!
 
-Here I will apply the exclusion critearia to determine the final sample size I will be working with. I will be creating a new data.frame for each time I do a subset so I can track my numbers
+Here I will apply the exclusion criteria to determine the final sample size I will be working with. I will be creating a new data.frame for each time I do a subset so I can track my numbers
 ```{r results='hide'}
 #Starting with total study population N= 1052
 ##KEEP ONLY WOMEN THAT DELIVERED IN HEALTH FACILITY
