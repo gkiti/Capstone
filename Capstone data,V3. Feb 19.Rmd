@@ -1,0 +1,336 @@
+---
+title: "Thesis data"
+author: "Gift Kiti"
+date: "2/19/2019"
+output: pdf_document
+---
+
+The dataset we will be using in this lesson is a STATA file called 'pqcc_mothers_surveyv3-8-19-18.dta'. I've saved it in the Dropbox- Gift Capstone- Data folder. 
+
+# Setting my work directory (3 options):
+
+1) Go to Session -> Set Working Directory -> Choose Directory...
+
+OR 
+
+2) Locate your file path, copy and paste it within the function setwd("filepath")
+
+OR 
+
+3) File -> Import Dataset 
+```{r}
+#THIS IS MY DIRECTORY
+setwd("~/Dropbox/Gift captstone/Data")
+
+#Remember to switch backslashes to forward slashes
+```
+
+# Installing and loading your libraries 
+(aka packages to run specific functions)
+
+Below are three packages you will need for this exercise. Once you install them, you need to use the function 'library' to call in the package. You only ever need to install a package once, but you always need to call in a package every time you open R.
+
+```{r r loadlib, echo=T, results='hide', message=F, warning=F}
+####INSTALL AND THEN LOAD LIBRARIES
+
+#install.packages("haven")
+#install.packages("Hmisc")
+#install.packages("sjlabelled")
+#install.packages("summarytools")
+#install.packages ("data.table")
+#install.packages ("XQuartz")
+#install.packages("ggplot2")
+
+library(ggplot2)
+library(haven) #IMPORTS SPSS, STATA, AND SAS FILES
+library(Hmisc)#for the fuction describe
+library(sjlabelled)#ADDS LABELS TO VARIABLES / READS IN LABELS
+library(summarytools) #Descriptve statistics
+library(dplyr)
+```
+
+# Reading in dataset 
+(unless you used the Import Dataset button earlier)
+
+Functions will vary depending on the source file and type! 
+```{r}
+#rm(list=ls())
+pqcc_raw <- read_dta("pqcc_mothers_surveyv3-8-19-18.dta")
+#1052 obs, 1059 variables
+
+```
+
+#Exploring dataset
+```{r results='hide'}
+head(pqcc_raw ) #show the first few lines of the data
+str(pqcc_raw ) #shows the structure of the data and value labels
+#head(pqcc_raw$var) #displays a specific variable's value labels
+head(pqcc_raw$comp_labor) #Example 
+
+describe(pqcc_raw) #another function to show a concise statistical description
+
+###creates a table of variables###
+#pqcc_raw_vars <- data.frame("label" = sapply(pqcc_raw, 
+                         # function(x) attr(x, "label")) %>% #as.character(),  "labelled" = sapply(pqcc_raw, is.labelled))
+#pqcc_raw_vars
+```
+
+# Exploring specific variables  --  Part 1
+
+```{r eval=FALSE}
+
+###MATERNAL AGE (CATEGORICAL VARIABLE)
+
+#LOOK AT DATA
+hist(pqcc_raw$age)
+summary(pqcc_raw$age)
+describe(pqcc_raw$age)
+
+table(pqcc_raw$age, exclude=NULL) #include NAs
+freq(pqcc_raw$age, cumul = FALSE)
+
+```
+
+# Generating new variables - Part 1
+```{r}
+#GENERATE AGERAW 
+pqcc_raw$age_raw<-ifelse(15<=pqcc_raw$age & pqcc_raw$age<=19, 1,
+                  ifelse(20<=pqcc_raw$age & pqcc_raw$age<=29, 2,
+                    ifelse(30<=pqcc_raw$age & pqcc_raw$age<=48, 3,NA)))
+table(pqcc_raw$age_raw, exclude=NULL)
+
+#LABEL AGERAW
+pqcc_raw$age_raw <-factor(pqcc_raw$age_raw, levels=c(1,2,3),  labels=c("15-19", "20-29", "30-48"), ordered=F)#changed to F for ordered
+
+pqcc_raw$age_raw <- set_label(pqcc_raw$age_raw, label = "Maternal age categories")
+
+#CHECK LABELS
+freq(pqcc_raw$age_raw)
+mean(pqcc_raw$age)# meanage
+summary(pqcc_raw$num_births)# mean parity
+```
+
+
+# Generating new variables - Part 2
+```{r}
+
+#marital_status3- here I am combining the partnered/cohabiting category to single category along with the widowed and divorced/separated then having the married category as a separate entity alone
+#freq(pqcc_raw_3$marital_status)
+pqcc_raw$marital_stat3 <- ifelse(pqcc_raw$marital_status==1,1,
+                                   ifelse(pqcc_raw$marital_status==2,1,
+                                          ifelse(pqcc_raw$marital_status==3,3,
+                                            ifelse(pqcc_raw$marital_status==4,1,
+                                                ifelse(pqcc_raw$marital_status==5,1,NA)))))
+table(pqcc_raw$marital_stat3, exclude=NULL)
+#LABEL Marital status
+pqcc_raw$marital_stat3 <-factor(pqcc_raw$marital_stat3, levels=c(1,3),  labels=c("Not married", "Married"), ordered=F)#not married here is equal to Single/Widowed/Separated/Divorced/Cohabiting
+
+pqcc_raw$marital_stat3 <- set_label(pqcc_raw$marital_stat3, label = "Marital status")
+#Check labels
+freq(pqcc_raw$marital_stat3)
+```
+
+# Generating new variables - Part 3
+
+```{r}
+#num_births
+# Here I am clusturing those with 4 or more births into one level so that level 5(5 or more births) is equql to 4
+
+freq(pqcc_raw$num_births, cumul = FALSE)
+freq(pqcc_raw$num_births_cat, cumul = FALSE)
+
+pqcc_raw$num_births_cat2 <- ifelse(pqcc_raw$num_births_cat==1,1,
+                                     ifelse(pqcc_raw$num_births_cat==2,2,
+                                            ifelse(pqcc_raw$num_births_cat==3,3,
+                                                   ifelse(pqcc_raw$num_births_cat==4,4,
+                                                          ifelse(pqcc_raw$num_births_cat==5,4,NA)))))
+table(pqcc_raw$num_births_cat2, exclude=NULL)
+
+#LABEL Number of Births
+pqcc_raw$num_births_cat2 <-factor(pqcc_raw$num_births_cat2, levels=c(1,2,3,4),  labels=c("1", "2","3","4 or more"), ordered=F)
+
+pqcc_raw$num_births_cat2 <- set_label(pqcc_raw$num_births_cat2, label = "Number of Births")
+#Check labels
+freq(pqcc_raw$num_births_cat2, cumul = FALSE)
+
+```
+# Generating new variables - Part 4
+## Here we will generate a new variable pcc_explaim meds_1 which will have 3 factors instead of 4 factors. All the 4th option  factors which translate to (Did not get any medicine) were moved into the 3rd category of yes all the time due to conservative coding.
+```{r}
+#Method 1
+#recoding the 4 items of pcc_explain_meds- goes to 3 as done in validation paper
+pqcc_raw$pcc_explain_meds_1 <- pqcc_raw$pcc_explain_meds
+pqcc_raw$pcc_explain_meds_1[pqcc_raw$pcc_explain_meds_1==4] <-3
+
+#Method 2
+#recoding the 4 items of pcc_explain_meds- goes to 3 as done in validation paper      
+pqcc_raw$pcc_explain_meds_2 <- NA #creating an empty variable then populating it in the next step
+
+pqcc_raw$pcc_explain_meds_2 <- ifelse(pqcc_raw$pcc_explain_meds == 0, 0,
+                                  ifelse(pqcc_raw$pcc_explain_meds==1, 1,
+                                      ifelse(pqcc_raw$pcc_explain_meds==2, 2, 
+                                          ifelse(pqcc_raw$pcc_explain_meds ==3, 3, 
+                                              ifelse(pqcc_raw$pcc_explain_meds== 4,3,NA)))))
+table(pqcc_raw$pcc_explain_meds_2, exclude=NULL)
+
+pqcc_raw$pcc_explain_meds_1 <- pqcc_raw$pcc_explain_meds_2
+
+#how to delete a column
+pqcc_raw$pcc_explain_meds_2 <- NULL
+```
+
+
+# Generating outcome variable 
+```{r eval=FALSE}
+###OUTCOME VARIABLE - PCMC Score
+
+#Creating the PCMC_short scale using relevant variables and calling the new variable pcmc_short_score
+pqcc_raw <- pqcc_raw %>% rowwise() %>% mutate(pcmc_short_score = sum(pcc_name, pcc_respect, pcc_friendly,
+pcc_explain_exams, pcc_explain_meds_1, pcc_questions, pcc_involvement, pcc_permission, pcc_position_choice, pcc_attention_help, pcc_feeling,  pcc_privacy_vis_rc,  pcc_bestcare, na.rm = F))
+table(pqcc_raw$pcmc_short_score , exclude=NULL) #include NAs
+table(pqcc_raw$pcc_explain_meds, exclude=NULL)
+#pcc_explain_meds- goes to number 4
+#is.na(pqcc_raw$pcmc_short_score)
+#pqcc_raw$pcc_name
+
+summary(pqcc_raw$pcmc_short_score)
+```
+
+# Exploring specific variables - Part 1
+```{r eval=FALSE}
+###OUTCOME VARIABLE - PCMC Score
+#LOOK AT DATA FOR THE VARIABLE YOU ARE RECODING
+
+#Histogram
+hist(pqcc_raw$pcmc_short_score)
+
+#Shows the mean,median,25th and 75th quartiles,min,max
+summary(pqcc_raw$pcmc_short_score, exclude=NULL) 
+
+#more descriptive information 
+describe(pqcc_raw$pcmc_short_score)
+
+#simple frequency table (no percentages)
+table(pqcc_raw$pcmc_short_score, exclude=NULL) # why is it including null?
+
+freq(pqcc_raw$pcmc_short_score, cumul = FALSE) #what do % valid mean
+#report.nas = FALSE will hide NAs and % Valid column
+#remove cumul = FALSE if you want cumulative percentages
+
+#set print function for copying and pasting purposes
+print(freq(pqcc_raw$pcmc_short_score, cumul = FALSE), method = "render")
+
+```
+# Exploring specific variables  --  Part 2
+
+```{r}
+#Barplots
+ggplot(pqcc_raw,aes(x = NationalQuintile_3)+
+  geom_bar(aes(fill = type))+
+  labs(y = "Frequency", x = "") +
+theme_minimal(base_size = 15)+
+  theme(legend.position = "top"))
+
+table(pqcc_raw$age, exclude=NULL) #include NAs
+freq(pqcc_raw$age, cumul = FALSE)
+
+#To look at this visually
+#Boxplots by 3 age categories
+ggplot(data = pqcc_raw, aes(x = agecat, y = pcmc_short_score)) +
+  geom_boxplot() 
+#Boxplot with pcmc score on y axis
+ggplot(data = pqcc_raw, aes( y = pcmc_short_score)) +
+  geom_boxplot() 
+summary(pqcc_raw_3$pcmc_short_score)
+#Boxplot separating those who had a companion and those that didn't
+ggplot(data = pqcc_raw_3, aes(x = "", y = age)) +
+         geom_boxplot() + facet_grid(. ~ as.factor(pcc_support_binary)) +
+         labs(x = "")
+#Vertical boxplot for pcmc score with extra labeling and fancy dots
+boxplot(pqcc_raw$pcmc_short_score, axes = FALSE, staplewex = 1)
+text(y = boxplot.stats(pqcc_raw$pcmc_short_score)$stats, labels = boxplot.stats(pqcc_raw$pcmc_short_score)$stats, x = 1.25)
+
+# Piechart for labor support
+pie(pqcc_raw_3$pcc_support_binary)
+library(ggplot2)
+# Example on how to create a piechart
+simuldata <- data.frame(Category = LETTERS[1:3], 
+                        value = c(196, 149,127))
+
+piechart <- ggplot(simuldata, aes(x="", y=value, fill=Category)) +
+  geom_bar(width=1, stat="identity") +
+  coord_polar("y", start=0) +
+  xlab("") +
+  ylab("Value") +
+  theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+piechart
+
+```
+
+#Generating EXPOSURE variable
+
+**Here we are creating a binary exposure variable using a previous variable pcc_support_labor. Our binary level will combine levels 0 (No never) and 1( Yes, a few times) as the level 0=No then the 3 other levels(2,3,4- yes most of the time, yes all of the time and I did not want someone to stay with me as our level 1 =Yes). Those that responded that I did not want someone to stay with me are part of the 3rd level(Yes all of the time). This is once again because of conservative coding and here we are making the assumption that had the person wanted someone to accompany them they they would have been allowed to have someone with them.**
+```{r}
+#EXPOSURE Variable:
+
+#LABEL Support during labor
+#pqcc_raw$pcc_support_labor_rc <-factor(pqcc_raw$pcc_support_labor, levels=c(0,1,2,3,4),labels=c("No, Never", "Yes, a few times","Yes, most of the time","Yes, all of the time", "I did not want someone to stay with me"), ordered=F)
+#pqcc_raw$support_labor <- set_label(pqcc_raw$pcc_support_labor, label = "Companion allowed during labor")
+#Check labels
+#freq(pqcc_raw$pcc_support_labor, cumul = FALSE)
+
+#New Exposure Variable Generated:pcc_support_binary
+pqcc_raw$pcc_support_binary<- ifelse(pqcc_raw$pcc_support_labor== 0,0,
+                                      ifelse(pqcc_raw$pcc_support_labor==1, 0,
+                                             ifelse(pqcc_raw$pcc_support_labor==2, 2, 
+                                                ifelse(pqcc_raw$pcc_support_labor==3, 2,
+                                       ifelse(pqcc_raw$pcc_support_labor==4,2,NA)))))#record to 3 as was done in the validation
+#LABEL Support during labor
+pqcc_raw$pcc_support_binary <-factor(pqcc_raw$pcc_support_binary, levels=c(0,2),  labels=c("No", "Yes"), ordered=F)
+
+pqcc_raw$pcc_support_binary <- set_label(pqcc_raw$pcc_support_binary, label = "Companion allowed during labor")
+#Check labels
+table(pqcc_raw$pcc_support_binary, exclude=NULL)
+#table(pqcc_raw$pcc_support_labor, exclude=NULL)-
+freq(pqcc_raw$pcc_support_labor, cumul = FALSE)
+freq(pqcc_raw$pcc_support_binary)
+#describe(pqcc_raw$pcc_support_binary)
+
+```
+
+
+# Exclusion Criteria- Subsetting my data!
+
+Here I will apply the exclusion critearia to determine the final sample size I will be working with. I will be creating a new data.frame for each time I do a subset so I can track my numbers
+```{r results='hide'}
+#Starting with total study population N= 1052
+##KEEP ONLY WOMEN THAT DELIVERED IN HEALTH FACILITY
+table(pqcc_raw$del_hf, exclude=NULL) #facility delivery are coded as 1
+pqcc_raw_1 <-subset(pqcc_raw, del_hf==1)# remaining 894 (-158 non-health facility births)
+
+###KEEP WOMEN WITH Complete data on PCMC score (Outcome)
+summary(pqcc_raw$pcmc_short_score, exclude= NULL)
+pqcc_raw_2<-subset(pqcc_raw_1, !is.na(pcmc_short_score))# remaining 881 (-13 missing outcome)
+
+###KEEP WOMEN WITH Complete data on continuous labor support (Exposure)
+table(pqcc_raw_2$pcc_support_labor, exclude=NULL) #N=1 NA
+pqcc_raw_3 <-subset(pqcc_raw_2, !is.na(pcc_support_labor))
+pqcc_raw_3 <-subset(pqcc_raw_3,(pcc_support_labor!=4))
+# remaining 874 (-7 missing exposure)
+
+###Final dataset: N=874 (dropped N=178)
+
+#Lets save the data as final_data
+write.csv(pqcc_raw_3,"final_datta.csv")
+
+
+```
+
+
+
+
+
+
+
+
+
