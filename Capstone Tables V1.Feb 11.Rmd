@@ -1,0 +1,498 @@
+---
+title: "Capstone Tables 1, 2 & 3"
+author: "Gift Kiti"
+date: "2/10/2020"
+output: html_document
+---
+
+# Creating Descriptive Tables and Exploring Data (continued)
+
+This tutorial will provide useful tips and tricks for descriptive analyses and cross-tabulatons. These tools will be most helpful in building your Tables 1 and 2 for your research project. In addition, we have also provided some statistical tests to further explore relationships between categorical/continuos variables. Brief descriptions for these statistical tests are provided below.
+
+```{r}
+setwd("~/Dropbox/Gift captstone/Data")
+```
+
+## Call in the dataset you created last week (from raw.dta)
+```{r}
+#read in the dataset created from the previous week - the name may be different
+pqcc_raw_3 <- read.csv("final_data.csv")
+
+#pqcc_raw_3 <- data.frame(pqcc_raw_3)
+
+#notice that the CSV file retains labels created in R, but it does not retain STATA labels
+```
+
+```{r r loadlib, echo=T, results='hide', message=F, warning=F}
+library(summarytools) #descriptve statistics / cross-tabulations
+
+#install.packages("ggplot2")
+library(ggplot2)
+```
+
+# Summary Tables - Descriptive Analysis (TABLE 1)
+
+In this section, I am going to generate descriptive statistics using both the 'freq' function and the 'c' function.  The package, summarytools, is fairly versatile. You can see more examples and techniques here: https://cran.r-project.org/web/packages/summarytools/vignettes/Introduction.html
+
+
+## Method 1 - 'freq' function, repeated
+```{r}
+freq(pqcc_raw_3$marital_stat3, cumul = FALSE)
+freq(pqcc_raw_3$work_for_pay, cumul = FALSE)
+freq(pqcc_raw_3$num_births_cat2, cumul = FALSE)
+freq(pqcc_raw_3$NationalQuintile_3cat, cumul = FALSE)
+#freq(pqcc_raw_3$del_place, cumul = FALSE)
+#freq(pqcc_raw_3$del_place1, cumul = FALSE)
+freq(pqcc_raw_3$del_place2, cumul = FALSE)
+freq(pqcc_raw_3$company_tohf, cumul = FALSE) 
+#freq(pqcc_raw_3$education2, cumul = FALSE) 
+freq(pqcc_raw_3$education, cumul = FALSE) 
+#freq(pqcc_raw_3$grade_completed, cumul = FALSE) 
+#freq(pqcc_raw_3$del_provider1, cumul = FALSE) 
+freq(pqcc_raw_3$del_provider4, cumul = FALSE)
+freq(pqcc_raw_3$del_provider_sex, cumul = FALSE) 
+#freq(pqcc_raw_3$tribe, cumul = FALSE) 
+freq(pqcc_raw_3$tribe1, cumul = FALSE)  
+#freq(pqcc_raw_3$religion, cumul = FALSE) 
+#freq(pqcc_raw_3$religion1, cumul = FALSE) 
+freq(pqcc_raw_3$religion3, cumul = FALSE) 
+freq(pqcc_raw_3$interview_location, cumul = FALSE)
+#freq(pqcc_raw_3$postpartum_length_bin, cumul = FALSE)
+freq(pqcc_raw_3$postpartum_length_bin2, cumul = FALSE)
+#freq(pqcc_raw_3$pcmc_short_score, cumul = FALSE)
+freq(pqcc_raw_3$pcc_support_binary, cumul = FALSE)
+
+
+
+#Who accompanied to health facility
+#Here I'm treatating each of the people that accompanied as a separate variable
+freq(pqcc_raw_3$comp_tohf_type___1, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___2, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___3, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___4, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___5, cumul= FALSE)
+#freq(pqcc_raw_3$comp_tohftype_other, cumul= FALSE) cowife seems to have accompanied a good number of the people
+
+#there are a variety of settings for this function, freq. 
+#type in "?freq" to see different settings. For example, report.NAs = FALSE
+```
+```{r}
+#Short PCMC scale
+#pcmc_short <- pqcc_raw %>% select(pcc_name, pcc_respect, pcc_friendly,
+#pcc_explain_exams, pcc_explain_meds, pcc_questions, pcc_involvement, pcc_permission, pcc_position_choice, pcc_attention_help, pcc_feeling,  pcc_privacy_vis_rc,  pcc_bestcare)
+freq(pqcc_raw_3$pcc_friendly, cumul= FALSE)
+freq(pqcc_raw_3$pcc_respect, cumul= FALSE)
+freq(pqcc_raw_3$pcc_explain_exams, cumul= FALSE)
+freq(pqcc_raw_3$pcc_explain_meds, cumul= FALSE)
+freq(pqcc_raw_3$pcc_questions, cumul= FALSE)
+freq(pqcc_raw_3$pcc_position_choice, cumul= FALSE)
+freq(pqcc_raw_3$pcc_involvement, cumul= FALSE)
+freq(pqcc_raw_3$pcc_permission, cumul= FALSE)
+freq(pqcc_raw_3$pcc_attention_help, cumul= FALSE)
+freq(pqcc_raw_3$pcc_feeling, cumul= FALSE)
+freq(pqcc_raw_3$pcc_bestcare, cumul= FALSE)
+freq(pqcc_raw_3$pcc_privacy_vis_rc, cumul= FALSE)
+freq(pqcc_raw_3$pcc_name, cumul= FALSE)
+freq(pqcc_raw_3$company_tohf, cumul= FALSE)
+
+
+#Who accompanied to health facility
+#Here I'm treatating each of the people that accompanied as a separate variable
+freq(pqcc_raw_3$comp_tohf_type___1, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___2, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___3, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___4, cumul= FALSE)
+freq(pqcc_raw_3$comp_tohf_type___5, cumul= FALSE)
+#freq(pqcc_raw_3$comp_tohftype_other, cumul= FALSE) cowife seems to have accompanied a good number of the people
+
+```
+
+## Method 2 - Using 'c' function
+
+This function "c" is a generic function which combines arguments in to a list. It is simple function, but extremely useful.
+
+```{r results='hide'}
+#Relevant Variables: subsetting to variables I am interested in (check spelling!)
+#note: R is a Case Sensitive Language
+t1_vars <-pqcc_raw_3[c("education", "marital_stat3", "occupation","age_cat", "work_for_pay", "NationalQuintile_3cat", "num_births_cat2", "education2", "del_provider_sex","num_births_cat2", "del_provider4", "del_place2", "tribe1", "religion3","interview_location","postpartum_length_bin2", "pcc_support_binary","company_tohf")]
+t1_vars
+#comp_tohf_type"- who accompanied you
+
+
+```
+
+
+##Example of Table 2: Descriptive Statistics by Exposure (labor companion)
+
+## Categorical - Using the built=in chisq.test function
+```{r results='hide'}
+# Method 1 - No Ns, just chi-square tests
+chisq.test(pqcc_raw_3$age_raw, pqcc_raw_3$pcc_support_binary, correct=FALSE) #correct=FALSE- continuity correction
+chisq.test(pqcc_raw_3$education, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$marital_stat3, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$del_place2, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+
+#same line as earlier
+t1_vars <-pqcc_raw_3[c("age_raw", "education", "marital_stat3", "del_place2")]
+
+#applying this list to generate chi-squares at once
+lapply(t1_vars, function(x) chisq.test(table(x,pqcc_raw_3$pcc_support_binary), #lapply-list apply
+                            simulate.p.value = TRUE, correct=FALSE))
+```
+
+
+## Cross-tabulation and Chi-Squares using 'ctable'
+
+'ctable' is a function in summarytools that produces a cross-tabulation for a pair of categorical variables (or factors) with either row, column, or total proportions, as well as marginal sums. Be careful with calculating chi-squares for variables with missing rows.
+
+```{r results='hide'}
+# Method 2 with Ns -- COMPARE CHI SQUARES
+
+#c("literacy_read", "literacy_write", "grade_completed", "marital_status", "occupation", "part_education", "work_for_pay", "NationalQuintile_3cat", "num_births_cat2", "education2", "del_provider_sex", "del_provider4", "del_place2", "tribe1", "religion3","interview_location","postpartum_length_bin" )]
+
+ctable(pqcc_raw_3$age_raw, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no") 
+
+#see how the chisquare changes when you don't include useNA
+ctable(pqcc_raw_3$age_raw, pqcc_raw_3$pcc_support_binary, chisq = T) #didn't see a difference in the 2 tables
+
+
+ctable(pqcc_raw_3$marital_stat3, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$pcc_support_binary, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+#ctable(pqcc_raw_3$literacy_read, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$education, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$work_for_pay, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$NationalQuintile_3cat, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$num_births_cat2, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$interview_location, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")#0 is health facility and 1 is community or home
+ctable(pqcc_raw_3$postpartum_length_bin2, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$tribe1, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$del_provider_sex, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$del_provider4, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$del_place2, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+ctable(pqcc_raw_3$company_tohf, pqcc_raw_3$pcc_support_binary, chisq = T, useNA = "no")
+
+
+
+#company to health facility
+chisq.test(pqcc_raw_3$comp_tohf_type___1, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$comp_tohf_type___2, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$comp_tohf_type___3, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$comp_tohf_type___4, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+chisq.test(pqcc_raw_3$comp_tohf_type___5, pqcc_raw_3$pcc_support_binary, correct=FALSE)
+
+#library(forcats)
+```
+
+Using T-test: We use t-test when we are dealing with 1 categorical variable(2 levels) and 1 continuous varible
+```{r results='hide'}
+#t-TEST
+t.test((pqcc_raw_3$age)~(pqcc_raw_3$pcc_support_binary)) # where y is numeric and x is a binary factor
+t.test((pqcc_raw_3$num_births)~(pqcc_raw_3$pcc_support_binary))
+
+#ctable(t1, df$ag_work, chisq = T) DOES NOT WORK
+
+#mean Maternal Age by exposure
+#pqcc_raw_3 %>%
+#group_by(pcc_support_binary) %>%
+#summarise(mean_age = mean( age ),
+#sd_vol = sd(age ),
+#samp_size = n())
+```
+## Continuous variables
+
+For continous variables, you will almost always run a simple t. test first.
+
+USAGE:
+t.test(x, y = NULL,
+       alternative = c("two.sided", "less", "greater"),
+       mu = 0, paired = FALSE, var.equal = FALSE,
+       conf.level = 0.95, ...)
+
+##Table 3: Descriptive Statistics by Outcome (PCMC scale)
+In computing the p value for table 3 we shar either carry out an anova test or a t test. We will carry out an anova test if we are dealing with 1 variable that is continuous and another one that is categorical in 2 levels. T-test is used when we are deadling with 1 continuous variable and a categorical variable that only has 2 levels.
+### Continuous - One-way ANOVA- >2 levels (continuous)
+
+Null hypothesis: the means of the different groups are the same
+Alternative hypothesis: At least one sample mean is not equal to the others.
+```{r}
+# Compute the analysis of variance
+
+lm.test <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$age_raw))
+# Summary of the analysis
+summary(lm.test)
+anova(lm.test)
+
+# calculate the means and SD for each group using dplyr, then anova test if categorical variable is > 2 levels
+
+#del_provider_sex
+
+lm.test1 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$del_provider3))
+# Summary of the analysis
+summary(lm.test1)
+anova(lm.test1)
+
+#marital status
+pqcc_raw_3 %>%
+group_by( marital_stat3) %>%
+summarise(mean_score = mean( pcmc_short_score ),
+sd_vol = sd( pcmc_short_score ),
+samp_size = n())
+
+lm.test2 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$marital_stat3))
+# Summary of the analysis
+summary(lm.test2)
+anova(lm.test2)
+
+#age_cat
+pqcc_raw_3 %>%
+group_by(age_cat) %>%
+summarise(mean_age = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test3 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$age_cat))
+# Summary of the analysis
+summary(lm.test3)
+anova(lm.test3)
+
+#literacy
+pqcc_raw_3 %>%
+group_by(literate) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test4 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$literate))
+# Summary of the analysis
+summary(lm.test4)
+anova(lm.test4)
+
+#maternal education
+
+pqcc_raw_3 %>%
+group_by(education) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test5 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$education))
+# Summary of the analysis
+summary(lm.test5)
+anova(lm.test5)
+
+#wealth quintile
+pqcc_raw_3 %>%
+group_by(NationalQuintile_3cat) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test6 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$NationalQuintile_3cat))
+# Summary of the analysis
+summary(lm.test6)
+anova(lm.test6)
+
+#Work for pay( 2-levels)
+
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$work_for_pay)) # where y is numeric and x is a binary factor
+
+pqcc_raw_3 %>%
+group_by(work_for_pay) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test7 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$work_for_pay))
+# Summary of the analysis
+summary(lm.test7)
+anova(lm.test7)
+
+#number of births num_births_cat2
+
+pqcc_raw_3 %>%
+group_by(num_births_cat2) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test8 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$num_births_cat2))
+# Summary of the analysis
+summary(lm.test8)
+anova(lm.test8)
+
+#interview location 
+
+pqcc_raw_3 %>%
+group_by(interview_location) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$interview_location)) # where y is numeric and x is a binary factor
+
+lm.test9 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$interview_location))
+# Summary of the analysis
+summary(lm.test9)
+anova(lm.test9)
+
+#postpartum length 
+pqcc_raw_3 %>%
+group_by(postpartum_length_bin) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$postpartum_length_bin2)) # where y is numeric and x is a binary factor
+
+lm.test10 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$postpartum_length_bin2))
+# Summary of the analysis
+summary(lm.test10)
+anova(lm.test10)
+
+#tribe 
+pqcc_raw_3 %>%
+group_by(tribe1) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test11 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$tribe1))
+# Summary of the analysis
+summary(lm.test11)
+anova(lm.test11)
+
+#delivery facility type del_place2
+pqcc_raw_3 %>%
+group_by(del_place2) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test12 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$del_place2))
+# Summary of the analysis
+summary(lm.test12)
+anova(lm.test12)
+
+#delivery provider4
+pqcc_raw_3 %>%
+group_by(del_provider4) %>% summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+lm.test13 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$del_provider4))
+# Summary of the analysis
+summary(lm.test13)
+anova(lm.test13)
+
+mean(pqcc_raw_3$pcmc_short_score)
+sd(pqcc_raw_3$pcmc_short_score)
+
+#Comp_to_hf
+pqcc_raw_3 %>%
+group_by(company_tohf) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$company_tohf)) # where y is numeric and x is a binary factor
+
+#continuous support
+library(dplyr)
+pqcc_raw_3 %>%
+group_by(pcc_support_binary) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$pcc_support_binary)) # where y is numeric and x is a binary factor
+
+
+lm.test14 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$company_tohf))
+# Summary of the analysis
+summary(lm.test14)
+anova(lm.test14)
+#pqcc_raw_3$comp_tohf_type___1
+
+#continuous labor support
+pqcc_raw_3 %>%
+group_by(pcc_support_binary) %>%
+summarise(mean_score = mean(pcmc_short_score),
+sd_vol = sd(pcmc_short_score),
+samp_size = n())
+#t-TEST
+t.test((pqcc_raw_3$pcmc_short_score)~(pqcc_raw_3$pcc_support_binary)) # where y is numeric and x is a binary factor
+
+
+lm.test15 <- lm(pqcc_raw_3$pcmc_short_score~ as.factor(pqcc_raw_3$pcc_support_binary))
+# Summary of the analysis
+summary(lm.test15)
+anova(lm.test15)
+```
+
+##For Age and parity as continuous variables with outcome
+
+Pearson’s correlation - measures a linear dependence between two variables cor(x, y, method = c(“pearson”, “kendall”, “spearman”)) cor.test(x, y, method=c(“pearson”, “kendall”,“spearman”))cor() computes the correlation coefficient cor.test() test for association/correlation between paired samples.It returns both the correlation coefficient and the significance level(or p-value) of the correlation.
+
+```{r}
+cor.test(pqcc_raw_3$age, pqcc_raw_3$pcmc_short_score, method=c("pearson"))
+cor.test(pqcc_raw_3$num_births, pqcc_raw_3$pcmc_short_score, method=c("pearson"))
+```
+
+
+
+
+
+```{r}
+# Save our final data-set as final data to be used in running multivariable models 
+saveRDS(pqcc_raw_3, "pqcc_raw_3.rds")
+# Restore it under a different name
+final_data <- readRDS("pqcc_raw_3.rds")
+```
+
+
+
+
+
+
+
+# Exploring specific variables --  Part 3
+
+```{r eval=FALSE}
+###YEARS IN THE USA (CATEGORICAL)
+
+#LOOK AT DATA
+hist(df_raw$ayrsusa)
+summary(df_raw$ayrsusa)
+
+table(df_raw$ayrsusa, exclude=NULL) #include NAs
+freq(df_raw$ayrsusa, cumul = FALSE)
+
+#LOGIC CHECK - Did anyone live in US more years than they are old?
+#METHOD 1
+age_check <- subset(df_raw, df_raw$ayrsusa>df_raw$age)
+
+##METHOD 2
+check <- df_raw$ayrsusa>df_raw$age
+sum(check, na.rm=TRUE) #should equal to 0
+
+###METHOD 3
+which(df_raw$ayrsusa>df_raw$ayrsusa)
+
+#WHY ARE DATA MISSING? 
+#If they were born in the US (N=63 women), they were not asked this question.
+
+ctable(df_raw$ayrsusa, df_raw$momborn, prop = "n")
+#prop = "n"
+#prop = "t"
+#prop = "c"
+#prop = "r"
+
+ctable(df_raw$ayrsusa, df_raw$entire_life, prop = "n")
+```
+
+
+
+
