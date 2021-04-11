@@ -7,20 +7,20 @@ output: html_document
 
 # Creating Descriptive Tables and Exploring Data (continued)
 
-This tutorial will provide useful tips and tricks for descriptive analyses and cross-tabulatons. These tools will be most helpful in building your Tables 1 and 2 for your research project. In addition, we have also provided some statistical tests to further explore relationships between categorical/continuos variables. Brief descriptions for these statistical tests are provided below.
+Here I will be creating descriptive analyses and cross-tabulatons to build Tables 1 and 2 for my thesis research project looking at the association between having a companion during labor and person centered maternity care. In addition, I will run some statistical tests to further explore relationships between categorical/continuous variables. 
 
+# Setting my work directory:
+1) Go to Session -> Set Working Directory -> Choose Directory...OR 2) Locate your file path, copy and paste it within the function setwd("filepath")
 ```{r}
 setwd("~/Dropbox/Gift captstone/Data")
 ```
 
-## Call in the dataset you created last week (from raw.dta)
+## Call in the dataset I created last week
 ```{r}
-#read in the dataset created from the previous week - the name may be different
+#read in the dataset created from the previous week 
 pqcc_raw_3 <- read.csv("final_data.csv")
-
 #pqcc_raw_3 <- data.frame(pqcc_raw_3)
 
-#notice that the CSV file retains labels created in R, but it does not retain STATA labels
 ```
 
 ```{r r loadlib, echo=T, results='hide', message=F, warning=F}
@@ -65,7 +65,7 @@ freq(pqcc_raw_3$pcc_support_binary, cumul = FALSE)
 
 
 #Who accompanied to health facility
-#Here I'm treatating each of the people that accompanied as a separate variable
+#Here I'm treating each of the people that accompanied as a separate variable
 freq(pqcc_raw_3$comp_tohf_type___1, cumul= FALSE)
 freq(pqcc_raw_3$comp_tohf_type___2, cumul= FALSE)
 freq(pqcc_raw_3$comp_tohf_type___3, cumul= FALSE)
@@ -183,7 +183,7 @@ chisq.test(pqcc_raw_3$comp_tohf_type___5, pqcc_raw_3$pcc_support_binary, correct
 #library(forcats)
 ```
 
-Using T-test: We use t-test when we are dealing with 1 categorical variable(2 levels) and 1 continuous varible
+Using T-test: We use t-test when we are dealing with 1 categorical variable(2 levels) and 1 continuous variable
 ```{r results='hide'}
 #t-TEST
 t.test((pqcc_raw_3$age)~(pqcc_raw_3$pcc_support_binary)) # where y is numeric and x is a binary factor
@@ -209,11 +209,12 @@ t.test(x, y = NULL,
        conf.level = 0.95, ...)
 
 ##Table 3: Descriptive Statistics by Outcome (PCMC scale)
-In computing the p value for table 3 we shar either carry out an anova test or a t test. We will carry out an anova test if we are dealing with 1 variable that is continuous and another one that is categorical in 2 levels. T-test is used when we are deadling with 1 continuous variable and a categorical variable that only has 2 levels.
+In computing the p value for table 3 we shall either carry out an anova test or a t test. We will carry out an anova test if we are dealing with 1 variable that is continuous and another one that is categorical in 2 levels. T-test is used when we are dealing with 1 continuous variable and a categorical variable that only has 2 levels.
 ### Continuous - One-way ANOVA- >2 levels (continuous)
 
 Null hypothesis: the means of the different groups are the same
 Alternative hypothesis: At least one sample mean is not equal to the others.
+
 ```{r}
 # Compute the analysis of variance
 
@@ -434,16 +435,12 @@ anova(lm.test15)
 
 ##For Age and parity as continuous variables with outcome
 
-Pearson’s correlation - measures a linear dependence between two variables cor(x, y, method = c(“pearson”, “kendall”, “spearman”)) cor.test(x, y, method=c(“pearson”, “kendall”,“spearman”))cor() computes the correlation coefficient cor.test() test for association/correlation between paired samples.It returns both the correlation coefficient and the significance level(or p-value) of the correlation.
+Pearson’s correlation - measures a linear dependence between two variables cor(x, y, method = c(“pearson”, “kendall”, “spearman”)) cor.test(x, y, method=c(“pearson”, “kendall”,“spearman”))cor() computes the correlation coefficient cor.test() test for association/correlation between paired samples. It returns both the correlation coefficient and the significance level(or p-value) of the correlation.
 
 ```{r}
 cor.test(pqcc_raw_3$age, pqcc_raw_3$pcmc_short_score, method=c("pearson"))
 cor.test(pqcc_raw_3$num_births, pqcc_raw_3$pcmc_short_score, method=c("pearson"))
 ```
-
-
-
-
 
 ```{r}
 # Save our final data-set as final data to be used in running multivariable models 
@@ -453,45 +450,6 @@ final_data <- readRDS("pqcc_raw_3.rds")
 ```
 
 
-
-
-
-
-
-# Exploring specific variables --  Part 3
-
-```{r eval=FALSE}
-###YEARS IN THE USA (CATEGORICAL)
-
-#LOOK AT DATA
-hist(df_raw$ayrsusa)
-summary(df_raw$ayrsusa)
-
-table(df_raw$ayrsusa, exclude=NULL) #include NAs
-freq(df_raw$ayrsusa, cumul = FALSE)
-
-#LOGIC CHECK - Did anyone live in US more years than they are old?
-#METHOD 1
-age_check <- subset(df_raw, df_raw$ayrsusa>df_raw$age)
-
-##METHOD 2
-check <- df_raw$ayrsusa>df_raw$age
-sum(check, na.rm=TRUE) #should equal to 0
-
-###METHOD 3
-which(df_raw$ayrsusa>df_raw$ayrsusa)
-
-#WHY ARE DATA MISSING? 
-#If they were born in the US (N=63 women), they were not asked this question.
-
-ctable(df_raw$ayrsusa, df_raw$momborn, prop = "n")
-#prop = "n"
-#prop = "t"
-#prop = "c"
-#prop = "r"
-
-ctable(df_raw$ayrsusa, df_raw$entire_life, prop = "n")
-```
 
 
 
